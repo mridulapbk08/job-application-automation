@@ -1,0 +1,5 @@
+#!/bin/bash
+echo "starting job application automation"
+sleep 2
+echo "job application completed successfully"
+

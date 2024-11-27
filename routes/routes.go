@@ -7,5 +7,4 @@ import (
 
 func InitRoutes(e *echo.Echo) {
 	e.POST("/apply", controllers.ApplyForJob)
-	
 }

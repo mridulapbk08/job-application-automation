@@ -1,9 +1,9 @@
-const axios = require("axios"); 
-const args = process.argv.slice(2); 
+const axios = require("axios");
+const args = process.argv.slice(2);
 
 if (args.length < 2) {
     console.error("Usage: node job_script.js <jobID> <candidateID>");
-    process.exit(1);
+    process.exit(1); // Exit with failure if arguments are missing
 }
 
 const jobID = parseInt(args[0]);
@@ -12,6 +12,7 @@ console.log(`Processing JobID: ${jobID}, CandidateID: ${candidateID}`);
 
 async function processJobApplication() {
     try {
+        // Simulate job execution status
         const randomScenario = Math.random();
         let status, output;
 
@@ -26,8 +27,9 @@ async function processJobApplication() {
             output = `Job site for JobID: ${jobID} is down.`;
         }
 
-        console.log(output); 
+        console.log(output);
 
+        // Prepare payload
         const payload = {
             job_id: jobID,
             candidate_id: candidateID,
@@ -37,10 +39,12 @@ async function processJobApplication() {
 
         console.log("Sending payload to backend:", payload);
 
+        // Send payload to backend
         const response = await axios.post("http://localhost:8082/apply", payload);
-
         console.log("Backend response:", response.data);
-        process.exit(0); // Exit with success
+
+        // Exit with appropriate status code
+        process.exit(status === "Success" ? 0 : status === "Failure" ? 1 : 2);
     } catch (error) {
         console.error("Failed to update backend. Error details:");
         if (error.response) {
@@ -49,8 +53,11 @@ async function processJobApplication() {
         } else {
             console.error("Error:", error.message);
         }
-        process.exit(1); // Exit with failure
+
+        // Exit with failure
+        process.exit(1);
     }
 }
 
+// Start the process
 processJobApplication();

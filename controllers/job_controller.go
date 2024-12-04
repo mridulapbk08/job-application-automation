@@ -58,6 +58,7 @@ func ApplyForJob(c echo.Context) error {
 
     log.Printf("Payload received: %+v\n", req)
 
+    // Create the tracker entry
     tracker := models.Tracker{
         JobID:       req.JobID,
         CandidateID: req.CandidateID,
@@ -67,11 +68,12 @@ func ApplyForJob(c echo.Context) error {
     }
 
     if err := database.DB.Create(&tracker).Error; err != nil {
-        log.Printf("Failed to insert tracker entry: %v\n", err)
+        log.Printf("Failed to insert tracker entry for JobID %d, CandidateID %d: %v\n", req.JobID, req.CandidateID, err)
         return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to log tracker entry"})
     }
 
-    log.Printf("Tracker entry created successfully for JobID %d by CandidateID %d\n", req.JobID, req.CandidateID)
+    log.Printf("Tracker entry created successfully for JobID %d, CandidateID %d\n", req.JobID, req.CandidateID)
+
     return c.JSON(http.StatusOK, map[string]interface{}{
         "job_id":       req.JobID,
         "candidate_id": req.CandidateID,

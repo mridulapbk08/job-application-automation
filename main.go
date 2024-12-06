@@ -1,4 +1,5 @@
 package main
+
 import (
 	"fmt"
 	"job-application-automation/database"

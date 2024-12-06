@@ -1,15 +1,13 @@
-const mysql = require("mysql2/promise"); 
-const args = process.argv.slice(2);
+const mysql = require("mysql2/promise");
 
+const args = process.argv.slice(2);
 if (args.length < 2) {
     console.error("Usage: node job_script.js <jobID> <candidateID>");
-    process.exit(1); 
+    process.exit(1);
 }
 
 const jobID = parseInt(args[0]);
 const candidateID = parseInt(args[1]);
-console.log(`Processing JobID: ${jobID}, CandidateID: ${candidateID}`);
-
 
 const dbConfig = {
     host: "localhost",
@@ -21,57 +19,38 @@ const dbConfig = {
 async function updateTracker(jobID, candidateID, status, output, error) {
     try {
         const connection = await mysql.createConnection(dbConfig);
-        console.log("Connected to the database.");
-
         const timestamp = new Date().toISOString();
-
-        const query = `
+        await connection.execute(`
             INSERT INTO trackers (job_id, candidate_id, status, output, error, timestamp)
             VALUES (?, ?, ?, ?, ?, ?)
-        `;
-        const [result] = await connection.execute(query, [jobID, candidateID, status, output, error, timestamp]);
-
-        console.log("Tracker updated successfully:", result);
+            ON DUPLICATE KEY UPDATE
+            status = VALUES(status),
+            output = VALUES(output),
+            error = VALUES(error),
+            timestamp = VALUES(timestamp)
+        `, [jobID, candidateID, status, output, error, timestamp]);
         await connection.end();
-    } catch (dbError) {
-        console.error("Failed to update tracker table:", dbError.message);
-        process.exit(1); 
+    } catch (err) {
+        console.error("Failed to update tracker:", err.message);
+        process.exit(1);
     }
 }
 
-
-async function processJobApplication() {
-    let status, output, error = null;
+async function processJob() {
+    let status = "Success", output = `Application successful for JobID: ${jobID}`, error = "";
 
     try {
-        const randomScenario = Math.random();
-
-       
-        if (randomScenario < 0.5) {
-            status = "Success";
-            output = `Application successful for JobID: ${jobID}`;
-        } else if (randomScenario < 0.8) {
-            status = "Failure";
-            output = `Automation failed for JobID: ${jobID}`;
-        } else {
-            status = "Website Down";
-            output = `Job site for JobID: ${jobID} is down.`;
+        if (Math.random() < 0.3) {
+            throw new Error("Automation failure simulation");
         }
-
-        console.log(output);
-    } catch (scriptError) {
-        status = "Error";
+    } catch (err) {
+        status = "Failure";
         output = "";
-        error = scriptError.message;
-        console.error("Script execution error:", error);
+        error = err.message;
     }
 
-   
     await updateTracker(jobID, candidateID, status, output, error);
-
-
     process.exit(status === "Success" ? 0 : 1);
 }
 
-
-processJobApplication();
+processJob();

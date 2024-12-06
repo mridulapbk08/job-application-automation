@@ -1,21 +1,52 @@
-const axios = require("axios");
+const mysql = require("mysql2/promise"); 
 const args = process.argv.slice(2);
 
 if (args.length < 2) {
     console.error("Usage: node job_script.js <jobID> <candidateID>");
-    process.exit(1); // Exit with failure if arguments are missing
+    process.exit(1); 
 }
 
 const jobID = parseInt(args[0]);
 const candidateID = parseInt(args[1]);
 console.log(`Processing JobID: ${jobID}, CandidateID: ${candidateID}`);
 
-async function processJobApplication() {
-    try {
-        // Simulate job execution status
-        const randomScenario = Math.random();
-        let status, output;
 
+const dbConfig = {
+    host: "localhost",
+    user: "root",
+    password: "Root@1234#",
+    database: "job_db",
+};
+
+async function updateTracker(jobID, candidateID, status, output, error) {
+    try {
+        const connection = await mysql.createConnection(dbConfig);
+        console.log("Connected to the database.");
+
+        const timestamp = new Date().toISOString();
+
+        const query = `
+            INSERT INTO trackers (job_id, candidate_id, status, output, error, timestamp)
+            VALUES (?, ?, ?, ?, ?, ?)
+        `;
+        const [result] = await connection.execute(query, [jobID, candidateID, status, output, error, timestamp]);
+
+        console.log("Tracker updated successfully:", result);
+        await connection.end();
+    } catch (dbError) {
+        console.error("Failed to update tracker table:", dbError.message);
+        process.exit(1); 
+    }
+}
+
+
+async function processJobApplication() {
+    let status, output, error = null;
+
+    try {
+        const randomScenario = Math.random();
+
+       
         if (randomScenario < 0.5) {
             status = "Success";
             output = `Application successful for JobID: ${jobID}`;
@@ -28,36 +59,19 @@ async function processJobApplication() {
         }
 
         console.log(output);
-
-        // Prepare payload
-        const payload = {
-            job_id: jobID,
-            candidate_id: candidateID,
-            status: status,
-            output: output,
-        };
-
-        console.log("Sending payload to backend:", payload);
-
-        // Send payload to backend
-        const response = await axios.post("http://localhost:8082/apply", payload);
-        console.log("Backend response:", response.data);
-
-        // Exit with appropriate status code
-        process.exit(status === "Success" ? 0 : status === "Failure" ? 1 : 2);
-    } catch (error) {
-        console.error("Failed to update backend. Error details:");
-        if (error.response) {
-            console.error("Status:", error.response.status);
-            console.error("Data:", error.response.data);
-        } else {
-            console.error("Error:", error.message);
-        }
-
-        // Exit with failure
-        process.exit(1);
+    } catch (scriptError) {
+        status = "Error";
+        output = "";
+        error = scriptError.message;
+        console.error("Script execution error:", error);
     }
+
+   
+    await updateTracker(jobID, candidateID, status, output, error);
+
+
+    process.exit(status === "Success" ? 0 : 1);
 }
 
-// Start the process
+
 processJobApplication();

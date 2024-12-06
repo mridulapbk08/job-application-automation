@@ -12,5 +12,6 @@ type Tracker struct {
 	CandidateID int    `json:"candidate_id"`
 	Status      string `json:"status"`
 	Output      string `json:"output"`
+	Error       string `json:"error"` 
 	Timestamp   string `json:"timestamp"`
 }

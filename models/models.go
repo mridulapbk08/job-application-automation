@@ -12,6 +12,8 @@ type Tracker struct {
 	CandidateID int    `json:"candidate_id"`
 	Status      string `json:"status"`
 	Output      string `json:"output"`
-	Error       string `json:"error"` 
+	Error       string `json:"error"`
+	RetryCount  int    `json:"retry_count"` // Track retries
+	MaxRetries  int    `json:"max_retries"` // Maximum allowed retries
 	Timestamp   string `json:"timestamp"`
 }

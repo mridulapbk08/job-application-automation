@@ -3,6 +3,7 @@ package database
 import (
 	"fmt"
 	"job-application-automation/models"
+
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -20,8 +21,5 @@ func Connect() error {
 }
 
 func Migrate() error {
-	if err := DB.AutoMigrate(&models.Job{}, &models.Tracker{}); err != nil {
-		return fmt.Errorf("failed to auto-migrate tables: %v", err)
-	}
-	return nil
+	return DB.AutoMigrate(&models.Job{}, &models.Tracker{})
 }

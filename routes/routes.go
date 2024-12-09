@@ -1,8 +1,9 @@
 package routes
 
 import (
-	"github.com/labstack/echo/v4"
 	"job-application-automation/controllers"
+
+	"github.com/labstack/echo/v4"
 )
 
 func InitRoutes(e *echo.Echo) {

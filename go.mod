@@ -3,7 +3,7 @@ module job-application-automation
 go 1.23.1
 
 require (
-	github.com/labstack/echo/v4 v4.12.0
+	github.com/labstack/echo/v4 v4.13.0
 	gorm.io/gorm v1.25.12
 )
 
@@ -11,7 +11,6 @@ require gorm.io/driver/mysql v1.5.7
 
 require (
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
-	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
@@ -23,6 +22,5 @@ require (
 	golang.org/x/net v0.24.0 // indirect
 	golang.org/x/sys v0.19.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
-	golang.org/x/time v0.8.0 // indirect
 
 )

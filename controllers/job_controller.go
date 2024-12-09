@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -10,43 +11,47 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// ApplyForJob handles the `/apply` endpoint
+// ApplyForJob handles the /apply endpoint
 func ApplyForJob(c echo.Context) error {
 	log.Println("Received POST /apply request")
 
-	// Define a request structure
 	type Request struct {
 		JobID       int64 `json:"job_id"`
 		CandidateID int   `json:"candidate_id"`
 	}
 
 	var req Request
-
-	// Parse incoming request body
 	if err := c.Bind(&req); err != nil {
-		log.Printf("Failed to bind request: %v", err)
+		log.Printf("Failed to bind request payload: %v", err)
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request payload"})
 	}
 
 	log.Printf("Payload received: %+v", req)
 
-	// Fetch the job details from the database
 	var job models.Job
 	if err := services.FetchJob(req.JobID, &job); err != nil {
 		log.Printf("Failed to fetch job details for JobID %d: %v", req.JobID, err)
 		return c.JSON(http.StatusNotFound, map[string]string{"error": "Job ID not found"})
 	}
 
-	// Execute the Node.js script through the service layer
-	if err := services.ExecuteScriptService(req.JobID, req.CandidateID, job.ScriptDetails); err != nil {
+	err := services.ExecuteScriptService(req.JobID, req.CandidateID, job.ScriptDetails)
+	if err != nil {
 		log.Printf("Error executing script for JobID %d, CandidateID %d: %v", req.JobID, req.CandidateID, err)
+
+		if err.Error() == "maximum retry attempts reached" {
+			return c.JSON(http.StatusTooManyRequests, map[string]string{
+				"error":        "Maximum retry attempts reached. Please contact support.",
+				"job_id":       fmt.Sprintf("%d", req.JobID),
+				"candidate_id": fmt.Sprintf("%d", req.CandidateID),
+			})
+		}
+
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Script execution failed"})
 	}
 
-	log.Printf("Script execution and tracker update completed successfully for JobID %d, CandidateID %d", req.JobID, req.CandidateID)
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"job_id":       req.JobID,
 		"candidate_id": req.CandidateID,
-		"message":      "Job processed and logged successfully",
+		"message":      "Job processed successfully and tracker updated.",
 	})
 }

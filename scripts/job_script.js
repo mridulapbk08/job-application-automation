@@ -20,15 +20,16 @@ async function updateTracker(jobID, candidateID, status, output, error) {
     try {
         const connection = await mysql.createConnection(dbConfig);
         const timestamp = new Date().toISOString();
-        await connection.execute(`
-            INSERT INTO trackers (job_id, candidate_id, status, output, error, timestamp)
+        await connection.execute(
+            `INSERT INTO trackers (job_id, candidate_id, status, output, error, timestamp)
             VALUES (?, ?, ?, ?, ?, ?)
             ON DUPLICATE KEY UPDATE
             status = VALUES(status),
             output = VALUES(output),
             error = VALUES(error),
-            timestamp = VALUES(timestamp)
-        `, [jobID, candidateID, status, output, error, timestamp]);
+            timestamp = VALUES(timestamp)`,
+            [jobID, candidateID, status, output, error, timestamp]
+        );
         await connection.end();
     } catch (err) {
         console.error("Failed to update tracker:", err.message);
@@ -37,7 +38,9 @@ async function updateTracker(jobID, candidateID, status, output, error) {
 }
 
 async function processJob() {
-    let status = "Success", output = `Application successful for JobID: ${jobID}`, error = "";
+    let status = "Success",
+        output = `Application successful for JobID: ${jobID}`,
+        error = "";
 
     try {
         if (Math.random() < 0.3) {

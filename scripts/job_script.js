@@ -12,14 +12,14 @@ const candidateID = parseInt(args[1]);
 const dbConfig = {
     host: "localhost",
     user: "root",
-    password: "Root@1234#",
+    password: "Root@1234#", 
     database: "job_db",
 };
 
 async function updateTracker(jobID, candidateID, status, output, error) {
     try {
         const connection = await mysql.createConnection(dbConfig);
-        const timestamp = new Date().toISOString();
+        const timestamp = new Date().toISOString().slice(0, 19).replace("T", " ");
         await connection.execute(
             `INSERT INTO trackers (job_id, candidate_id, status, output, error, timestamp)
             VALUES (?, ?, ?, ?, ?, ?)
@@ -31,6 +31,7 @@ async function updateTracker(jobID, candidateID, status, output, error) {
             [jobID, candidateID, status, output, error, timestamp]
         );
         await connection.end();
+        console.log("Tracker updated successfully.");
     } catch (err) {
         console.error("Failed to update tracker:", err.message);
         process.exit(1);
@@ -43,13 +44,16 @@ async function processJob() {
         error = "";
 
     try {
+        console.log(`Processing JobID: ${jobID}, CandidateID: ${candidateID}`);
         if (Math.random() < 0.3) {
             throw new Error("Automation failure simulation");
         }
+        console.log("Job processing succeeded.");
     } catch (err) {
         status = "Failure";
         output = "";
         error = err.message;
+        console.error(`Error during job processing: ${err.message}`);
     }
 
     await updateTracker(jobID, candidateID, status, output, error);

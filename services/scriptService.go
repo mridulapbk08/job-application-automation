@@ -67,12 +67,24 @@ func ExecuteScriptService(jobID int64, candidateID int, scriptPath string) error
 	cmd := exec.Command("node", absScriptPath, fmt.Sprintf("%d", jobID), fmt.Sprintf("%d", candidateID))
 	output, err := cmd.CombinedOutput()
 
-	log.Printf("Script Output for JobID %d, CandidateID %d: %s", jobID, candidateID, string(output))
+	status := "Success"
+	errorMsg := ""
 	if err != nil {
-		log.Printf("Script execution error for JobID %d, CandidateID %d: %v", jobID, candidateID, err)
-		return err
+		status = "Failure"
+		errorMsg = fmt.Sprintf("Script execution failed: %v", err)
+		log.Printf("Script execution failed for JobID %d, CandidateID %d: %v", jobID, candidateID, err)
 	}
 
-	log.Printf("Script executed successfully for JobID %d, CandidateID %d", jobID, candidateID)
+	tracker.Status = status
+	tracker.Output = string(output)
+	tracker.Error = errorMsg
+	tracker.Timestamp = time.Now().Format("2006-01-02 15:04:05")
+
+	if updateErr := database.DB.Save(&tracker).Error; updateErr != nil {
+		log.Printf("Failed to update tracker: %v", updateErr)
+		return updateErr
+	}
+
+	log.Printf("Updated tracker with status '%s' for JobID %d, CandidateID %d", status, jobID, candidateID)
 	return nil
 }

@@ -1,6 +1,5 @@
 package models
 
-// Job represents the jobs table in the database
 type Job struct {
 	JobID         int64  `gorm:"primaryKey;autoIncrement" json:"job_id"`
 	JobSite       string `gorm:"type:varchar(255)" json:"job_site"`

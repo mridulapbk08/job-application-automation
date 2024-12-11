@@ -1,6 +1,4 @@
-Here’s the `README.md` text you can copy and paste directly:
 
-```markdown
 # Job Application Automation
 
 A robust application designed to automate job applications through web-based form submission using Playwright and integrated database management. The system ensures that candidates' information is processed efficiently while handling errors and retries effectively.
@@ -189,5 +187,5 @@ node scripts/job_script.js <jobID> <candidateID>
 
 ## **License**
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-```
+
 

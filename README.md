@@ -181,7 +181,7 @@ node scripts/job_script.js <jobID> <candidateID>
 ---
 
 ## **Contributors**
-- [Your Name](https://github.com/your-username)
+- [Mridula Prabhakar]
 
 ---
 
